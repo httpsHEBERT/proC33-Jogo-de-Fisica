@@ -3,8 +3,8 @@ class Bola {
     constructor(x, y, width, height, angle){
 
         var options = {
-            'restitution': 1,
-            'friction': 0.2,
+            'restitution': 2,
+            'friction': 0,
         }
 
         this.body = Bodies.rectangle(x, y, width, height, options);

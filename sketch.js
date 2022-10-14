@@ -5,16 +5,20 @@ const Constraint = Matter.Constraint;
 
 var engine, world;
 var bg, solo, paredeD, paredeE, teto;
-var rede, redeImg, bola, bolaImg, slingshot1, slingshot2;
 var jogador1, jogador1Img, jogador2, jogador2Img;
+var rede, redeImg, bola, bolaImg;
 var placar1 = 0, placar2 = 0;
-var aImg, sImg, jImg, kImg;
+var aImg, sImg, wImg, jImg, kImg, iImg;
+var saque = 1; //jogador a sacar
+var estado = "parada";
 
 function preload(){
     aImg = loadImage("Images/a.png");
     sImg = loadImage("Images/s.png");
+    wImg = loadImage("Images/w.png");
     jImg = loadImage("Images/j.png");
     lImg = loadImage("Images/l.png");
+    iImg = loadImage("Images/i.png");
     bg = loadImage("Images/praia.jpg");
     redeImg = loadImage("Images/rede.png");
     jogador1Img = loadImage("Images/jogador1.png");
@@ -28,7 +32,7 @@ function setup(){
     world = engine.world;
 
     var options = {
-        'restitution': 0.4,
+        'restitution': 2,
         'isStatic': true
     }
 
@@ -48,9 +52,6 @@ function setup(){
 
     jogador2 = Bodies.rectangle(1216, 500, 40, 200, options);
     World.add(world, jogador2); 
-
-    slingshot1 = new Slingshot(bola.body, {x: jogador1.position.x+50, y: jogador1.position.y});
-    //slingshot2 = new Slingshot(bola.body, {x: jogador2.position.x-50, y: jogador1.position.y});
 }
 
 function draw(){
@@ -62,11 +63,13 @@ function draw(){
 
     exibir();
     mover();
+    //colidir();
     placar();
+    pontuar();
     sacar();
 }
 
-//exibi os corpos
+//exibe os corpos
 function exibir(){
 
     solo.display();
@@ -83,8 +86,22 @@ function exibir(){
     image(lImg, 1327, 101, 50, 50);
 }
 
-//movimento dos personagens
+//movimento
 function mover(){
+
+    //bola
+
+    if(estado === "parada"){
+        if(saque === 1){
+            Matter.Body.setPosition(bola.body, {x: jogador1.position.x+60 , y: jogador1.position.y-20});
+            image(wImg, 400, 300, 100, 100);
+        }else{
+            Matter.Body.setPosition(bola.body, {x: jogador2.position.x-60 , y: jogador2.position.y-20});
+            image(iImg, 970, 300, 100, 100);
+        }
+    }
+
+    //personagens
 
     if(keyCode == 68){
         Matter.Body.setPosition(this.jogador1, {x: jogador1.position.x+30, y: jogador1.position.y});
@@ -107,15 +124,23 @@ function mover(){
     }
 }
 
-//segurar a bola
-function mouseDragged(){
-    Matter.Body.setPosition(bola.body, {x: mouseX , y: mouseY});
-}
+function colidir(){
+    if(bola.body.position.y < 350){
 
-//soltar a bola
-function mouseReleased(){
-    slingshot1.fly();
-    slingshot2.fly();
+        if(bola.body.position.x > jogador1.position.x-50 &&
+           bola.body.position.x < jogador1.position.x+50){
+            
+            Matter.Body.applyForce(bola.body, bola.body.position, {x:0.05, y:-0.15});
+            setTimeout(keyCode = 10, 80);
+        }
+
+        if(bola.body.position.x > jogador2.position.x-50 &&
+           bola.body.position.x < jogador2.position.x+50){
+ 
+            Matter.Body.applyForce(bola.body, bola.body.position, {x:-0.05, y:-0.15});
+            setTimeout(keyCode = 10, 80);
+         }
+    }
 }
 
 //exibir o placar
@@ -130,16 +155,34 @@ function placar(){
 }
 
 //preparar bola para o saque e aumentar o placar
-function sacar(){
-
-    if(bola.body.position.y > 575){
+function pontuar(){
+    if(bola.body.position.y > 560){
         
         if(bola.body.position.x < 683){
-            //slingshot2.attach(bola.body);
             placar2++;
+            saque = 2;
         }else{
             placar1++;
-            slingshot1.attach(bola.body);
+            saque = 1;
         }
+
+        estado = "parada";
     }
+}
+
+//sacar a bola
+function sacar(){
+   if(saque === 1){
+    if(keyCode == 87){
+        estado = "movendo";
+        Matter.Body.applyForce(bola.body, bola.body.position, {x:0.13, y:-0.2});
+        setTimeout(keyCode = 10, 80);
+    }
+   }else{
+    if(keyCode == 73){
+        estado = "movendo";
+        Matter.Body.applyForce(bola.body, bola.body.position, {x:-0.13, y:-0.2});
+        setTimeout(keyCode = 10, 80);
+    }
+   } 
 }
